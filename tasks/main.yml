@@ -1,0 +1,21 @@
+---
+- name: Install nginx
+  action: apt name=nginx state=present
+
+- name: Create web directory
+  file: dest=/var/www/{{ server_hostname }}/web state=directory
+
+- name: Copy default nginx configuration
+  template: src=default.j2 dest=/etc/nginx/sites-available/default
+  notify: restart nginx
+
+- name: Copy error templates
+  copy: src={{ item }}.html dest=/var/www/{{ server_hostname }}/web/{{ item }}.html
+  with_items:
+    - 403
+    - 404
+    - 500
+
+- name: Start Nginx Service
+  service: name=nginx state=started enabled=true
+  ignore_errors: yes
